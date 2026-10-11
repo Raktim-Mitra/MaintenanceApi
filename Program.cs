@@ -1,30 +1,39 @@
+using Microsoft.EntityFrameworkCore;
+using MaintenanceApi.Data;
+using MaintenanceApi.Data.Seed;
+using MaintenanceApi.Interfaces;
+using MaintenanceApi.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(
+        builder.Configuration.GetConnectionString("DefaultConnection")
+    ));
+
+builder.Services.AddScoped<IDepartmentService, DepartmentService>();
+builder.Services.AddScoped<IMachineService, MachineService>();
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+// Seed initial departments
+using (var scope = app.Services.CreateScope())
 {
-app.UseHttpsRedirection();
-  
+    var context = scope.ServiceProvider
+        .GetRequiredService<AppDbContext>();
+
+    await DepartmentSeeder.SeedAsync(context);
 }
 
-
-app.MapGet("/machines", () =>
+if (app.Environment.IsDevelopment())
 {
-    return new[]
-    {
-        new { Id = 1, Name = "Casting Furnace", Status = "Operational" },
-        new { Id = 2, Name = "Conveyor Belt", Status = "Under Maintenance" }
-    };
-});
+    app.MapOpenApi();
+}
 
+app.UseHttpsRedirection();
 
+app.MapControllers();
 
 app.Run();
-
-
