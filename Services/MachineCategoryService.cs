@@ -59,4 +59,66 @@ public class MachineCategoryService : IMachineCategoryService
 
         return dto;
     }
+
+
+
+    public async Task<MachineCategoryDto?> UpdateAsync(
+        int id,
+        MachineCategoryUpdateDto dto)
+    {
+        var category = await _context.MachineCategories
+            .FirstOrDefaultAsync(c => c.MachineCategoryId == id);
+
+        if (category == null)
+            return null;
+
+        var name = dto.CategoryName.Trim();
+
+        var duplicate = await _context.MachineCategories
+            .AnyAsync(c =>
+                c.MachineCategoryId != id &&
+                c.CategoryName.ToLower() == name.ToLower());
+
+        if (duplicate)
+            throw new InvalidOperationException(
+                "A machine category with this name already exists.");
+
+        category.CategoryName = name;
+        category.Description = dto.Description?.Trim();
+
+        await _context.SaveChangesAsync();
+
+        return new MachineCategoryDto
+        {
+            MachineCategoryId = category.MachineCategoryId,
+            CategoryName = category.CategoryName,
+            Description = category.Description
+        };
+    }
+
+    // public async Task<bool> DeactivateAsync(int id)
+    // {
+    //     var category = await _context.MachineCategories
+    //         .FirstOrDefaultAsync(c => c.MachineCategoryId == id);
+
+    //     if (category == null)
+    //         return false;
+
+    //     // Don't deactivate a category currently used by active machines.
+    //     var hasActiveMachines = await _context.Machines
+    //         .AnyAsync(m =>
+    //             m.MachineCategoryId == id &&
+    //             m.IsActive);
+
+    //     if (hasActiveMachines)
+    //         throw new InvalidOperationException(
+    //             "Cannot deactivate a category used by active machines.");
+
+    //     category.IsActive = false;
+
+    //     await _context.SaveChangesAsync();
+
+    //     return true;
+    // }
+
 }

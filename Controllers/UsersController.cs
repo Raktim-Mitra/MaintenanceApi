@@ -1,10 +1,12 @@
 
 using MaintenanceApi.DTOs.Users;
 using MaintenanceApi.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MaintenanceApi.Controllers;
 
+[Authorize(Roles = "Manager")]
 [ApiController]
 [Route("api/users")]
 public class UsersController : ControllerBase
@@ -72,4 +74,35 @@ public class UsersController : ControllerBase
             user
         );
     }
+
+
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> Update(int id, UserUpdateDto dto)
+    {
+        try
+        {
+            var user = await _service.UpdateAsync(id, dto);
+
+            if (user == null)
+                return NotFound();
+
+            return Ok(user);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpPatch("{id:int}/deactivate")]
+    public async Task<IActionResult> Deactivate(int id)
+    {
+        var success = await _service.DeactivateAsync(id);
+
+        if (!success)
+            return NotFound();
+
+        return NoContent();
+    }
+
 }

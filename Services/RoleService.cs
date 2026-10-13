@@ -70,4 +70,32 @@ public class RoleService : IRoleService
             Description = role.Description
         };
     }
+
+
+    public async Task<RoleDto?> UpdateAsync(int id, RoleUpdateDto dto)
+    {
+        var role = await _context.Roles.FindAsync(id);
+
+        if (role == null)
+            return null;
+
+        var name = dto.RoleName.Trim();
+
+        if (await _context.Roles.AnyAsync(r =>
+            r.RoleId != id && r.RoleName.ToLower() == name.ToLower()))
+            throw new InvalidOperationException("Role name already exists.");
+
+        role.RoleName = name;
+        role.Description = dto.Description?.Trim();
+
+        await _context.SaveChangesAsync();
+
+        return new RoleDto
+        {
+            RoleId = role.RoleId,
+            RoleName = role.RoleName,
+            Description = role.Description
+        };
+    }
+
 }

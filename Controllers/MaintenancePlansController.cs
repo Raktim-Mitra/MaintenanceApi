@@ -62,7 +62,25 @@ public class MaintenancePlansController : ControllerBase
             plan
         );
     }
+    [HttpPut("{id:int}")]
+public async Task<IActionResult> Update(
+    int id,
+    MaintenancePlanUpdateDto dto)
+{
+    try
+    {
+        var plan = await _service.UpdateAsync(id, dto);
 
+        if (plan == null)
+            return NotFound();
+
+        return Ok(plan);
+    }
+    catch (InvalidOperationException ex)
+    {
+        return BadRequest(new { message = ex.Message });
+    }
+}
     [HttpPatch("{id:int}/deactivate")]
     public async Task<IActionResult> Deactivate(int id)
     {

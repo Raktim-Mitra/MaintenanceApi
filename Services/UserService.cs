@@ -94,4 +94,49 @@ public class UserService : IUserService
             CreatedAt = user.CreatedAt
         };
     }
+
+
+
+    public async Task<UserResponseDto?> UpdateAsync(int id, UserUpdateDto dto)
+    {
+        var user = await _context.Users.FindAsync(id);
+
+        if (user == null)
+            return null;
+
+        var email = dto.Email.Trim().ToLowerInvariant();
+
+        if (await _context.Users.AnyAsync(u =>
+            u.UserId != id && u.Email.ToLower() == email))
+            throw new InvalidOperationException("Email is already in use.");
+
+        user.FullName = dto.FullName.Trim();
+        user.Email = email;
+        user.EmployeeCode = dto.EmployeeCode?.Trim();
+
+        await _context.SaveChangesAsync();
+
+        return new UserResponseDto
+        {
+            UserId = user.UserId,
+            FullName = user.FullName,
+            Email = user.Email,
+            EmployeeCode = user.EmployeeCode,
+            IsActive = user.IsActive
+        };
+    }
+
+    public async Task<bool> DeactivateAsync(int id)
+    {
+        var user = await _context.Users.FindAsync(id);
+
+        if (user == null)
+            return false;
+
+        user.IsActive = false;
+        await _context.SaveChangesAsync();
+
+        return true;
+    }
+
 }

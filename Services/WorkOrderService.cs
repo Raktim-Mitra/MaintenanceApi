@@ -164,6 +164,57 @@ public class WorkOrderService : IWorkOrderService
         return (await GetByIdAsync(workOrder.WorkOrderId))!;
     }
 
+
+
+    public async Task<WorkOrderResponseDto?> UpdateAsync(
+        int id,
+        WorkOrderUpdateDto dto)
+    {
+        var workOrder = await _context.WorkOrders.FindAsync(id);
+
+        if (workOrder == null)
+            return null;
+
+        if (workOrder.Status is "Completed" or "Cancelled")
+            throw new InvalidOperationException(
+                "Completed or cancelled work orders cannot be edited.");
+
+        if (dto.Priority is not ("Low" or "Medium" or "High" or "Critical"))
+            throw new InvalidOperationException("Invalid priority.");
+
+        if (dto.ScheduledStart.HasValue &&
+            dto.ScheduledEnd.HasValue &&
+            dto.ScheduledEnd < dto.ScheduledStart)
+            throw new InvalidOperationException(
+                "Scheduled end must be after scheduled start.");
+
+        if (dto.AssignedToUserId.HasValue)
+        {
+            var userExists = await _context.Users.AnyAsync(u =>
+                u.UserId == dto.AssignedToUserId.Value && u.IsActive);
+
+            if (!userExists)
+                throw new InvalidOperationException(
+                    "Assigned technician does not exist or is inactive.");
+        }
+
+        workOrder.Title = dto.Title.Trim();
+        workOrder.Description = dto.Description?.Trim();
+        workOrder.Priority = dto.Priority;
+        workOrder.AssignedToUserId = dto.AssignedToUserId;
+        workOrder.ScheduledStart = 
+             DateTime.SpecifyKind(dto.ScheduledStart.Value, DateTimeKind.Utc);
+            
+        workOrder.ScheduledEnd = dto.ScheduledEnd.HasValue
+            ? DateTime.SpecifyKind(dto.ScheduledEnd.Value, DateTimeKind.Utc)
+            : null;
+        workOrder.Notes = dto.Notes?.Trim();
+
+        await _context.SaveChangesAsync();
+
+        return await GetByIdAsync(id);
+    }
+
     public async Task<bool> UpdateStatusAsync(
         int id,
         string newStatus,

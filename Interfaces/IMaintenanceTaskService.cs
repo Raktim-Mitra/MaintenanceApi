@@ -15,4 +15,8 @@ public interface IMaintenanceTaskService
     Task<bool> UpdateStatusAsync(
         int taskId,
         MaintenanceTaskUpdateDto dto);
+
+    Task<MaintenanceTaskResponseDto?> UpdateAsync(
+    int id,
+    MaintenanceTaskDetailsUpdateDto dto);    
 }

@@ -10,4 +10,11 @@ public interface IMachineService
         string? search);
 
     Task<MachineResponseDto?> GetByIdAsync(int id);
+    Task<MachineResponseDto> CreateAsync(MachineCreateDto dto);
+
+    Task<MachineResponseDto?> UpdateAsync(
+        int id,
+        MachineUpdateDto dto);
+
+    Task<bool> DeactivateAsync(int id);
 }

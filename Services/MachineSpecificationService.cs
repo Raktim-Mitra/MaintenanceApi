@@ -73,6 +73,36 @@ public class MachineSpecificationService : IMachineSpecificationService
         return dto;
     }
 
+
+    public async Task<MachineSpecificationDto?> UpdateAsync(
+        int machineId,
+        int specificationId,
+        MachineSpecificationUpdateDto dto)
+    {
+        var specification = await _context.MachineSpecifications
+            .FirstOrDefaultAsync(s =>
+                s.MachineId == machineId &&
+                s.MachineSpecificationId == specificationId);
+
+        if (specification == null)
+            return null;
+
+        specification.SpecificationName = dto.SpecificationName.Trim();
+        specification.SpecificationValue = dto.SpecificationValue.Trim();
+        specification.Unit = dto.Unit?.Trim();
+
+        await _context.SaveChangesAsync();
+
+        return new MachineSpecificationDto
+        {
+            MachineSpecificationId = specification.MachineSpecificationId,
+            MachineId = specification.MachineId,
+            SpecificationName = specification.SpecificationName,
+            SpecificationValue = specification.SpecificationValue,
+            Unit = specification.Unit
+        };
+    }
+
     public async Task<bool> DeleteAsync(int id)
     {
         var specification = await _context.MachineSpecifications

@@ -50,4 +50,24 @@ public class RolesController : ControllerBase
             role
         );
     }
+
+
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> Update(int id, RoleUpdateDto dto)
+    {
+        try
+        {
+            var role = await _service.UpdateAsync(id, dto);
+
+            if (role == null)
+                return NotFound();
+
+            return Ok(role);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
 }

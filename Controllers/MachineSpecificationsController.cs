@@ -42,6 +42,21 @@ public class MachineSpecificationsController : ControllerBase
         return Ok(specification);
     }
 
+    [HttpPut("{specificationId:int}")]
+    public async Task<IActionResult> Update(
+            int machineId,
+            int specificationId,
+            MachineSpecificationUpdateDto dto)
+    {
+        var result = await _service.UpdateAsync(
+            machineId, specificationId, dto);
+
+        if (result == null)
+            return NotFound(new { message = "Machine specification not found." });
+
+        return Ok(result);
+    }
+
     // DELETE: /api/machines/1/specifications/5
     [HttpDelete("{id:int}")]
     public async Task<IActionResult> Delete(int machineId, int id)

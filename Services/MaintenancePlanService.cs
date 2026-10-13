@@ -87,6 +87,36 @@ public class MaintenancePlanService : IMaintenancePlanService
         return await GetByIdAsync(plan.MaintenancePlanId);
     }
 
+    
+public async Task<MaintenancePlanResponseDto?> UpdateAsync(
+    int id,
+    MaintenancePlanUpdateDto dto)
+{
+    var plan = await _context.MaintenancePlans.FindAsync(id);
+
+    if (plan == null)
+        return null;
+
+    if (dto.NextDueDate.Date < dto.StartDate.Date)
+        throw new InvalidOperationException(
+            "Next due date cannot be before the start date.");
+
+    if (dto.FrequencyUnit is not ("Days" or "Weeks" or "Months" or "Years"))
+        throw new InvalidOperationException(
+            "Frequency unit must be Days, Weeks, Months, or Years.");
+
+    plan.PlanName = dto.PlanName.Trim();
+    plan.MaintenanceType = dto.MaintenanceType.Trim();
+    plan.FrequencyInterval = dto.FrequencyInterval;
+    plan.FrequencyUnit = dto.FrequencyUnit;
+    plan.StartDate = DateTime.SpecifyKind(dto.StartDate, DateTimeKind.Utc);
+    plan.NextDueDate = DateTime.SpecifyKind(dto.NextDueDate, DateTimeKind.Utc);
+
+    await _context.SaveChangesAsync();
+
+    return await GetByIdAsync(id);
+}
+
     public async Task<bool> DeactivateAsync(int id)
     {
         var plan = await _context.MaintenancePlans

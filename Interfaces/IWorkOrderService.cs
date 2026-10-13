@@ -13,9 +13,10 @@ public interface IWorkOrderService
 
     Task<WorkOrderResponseDto> CreateAsync(
         WorkOrderCreateDto dto);
-
+    Task<WorkOrderResponseDto?> UpdateAsync(int id, WorkOrderUpdateDto dto);
     Task<bool> UpdateStatusAsync(
         int id,
         string newStatus,
         string? remarks);
+
 }

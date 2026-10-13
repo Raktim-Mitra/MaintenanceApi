@@ -74,4 +74,23 @@ public class WorkOrdersController : ControllerBase
             return BadRequest(new { message = ex.Message });
         }
     }
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> Update(
+    int id,
+    WorkOrderUpdateDto dto)
+    {
+        try
+        {
+            var result = await _service.UpdateAsync(id, dto);
+
+            if (result == null)
+                return NotFound();
+
+            return Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
 }

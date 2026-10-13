@@ -101,4 +101,38 @@ public class MaintenanceTaskService : IMaintenanceTaskService
 
         return true;
     }
+
+
+
+    public async Task<MaintenanceTaskResponseDto?> UpdateAsync(
+        int id,
+        MaintenanceTaskDetailsUpdateDto dto)
+    {
+        var task = await _context.MaintenanceTasks.FindAsync(id);
+
+        if (task == null)
+            return null;
+
+        if (task.Status is "Completed" or "Skipped")
+            throw new InvalidOperationException(
+                "Completed or skipped tasks cannot be edited.");
+
+        task.TaskName = dto.TaskName.Trim();
+        task.Instructions = dto.Instructions?.Trim();
+        task.Remarks = dto.Remarks?.Trim();
+
+        await _context.SaveChangesAsync();
+
+        return new MaintenanceTaskResponseDto
+        {
+            MaintenanceTaskId = task.MaintenanceTaskId,
+            WorkOrderId = task.WorkOrderId,
+            TaskName = task.TaskName,
+            Instructions = task.Instructions,
+            Status = task.Status,
+            Remarks = task.Remarks,
+            CompletedAt = task.CompletedAt
+        };
+    }
+
 }

@@ -45,4 +45,44 @@ public class MachineCategoriesController : ControllerBase
             new { id = category.MachineCategoryId },
             category);
     }
+
+
+    [HttpPut("{id:int}")]
+    public async Task<IActionResult> Update(
+        int id,
+        MachineCategoryUpdateDto dto)
+    {
+        try
+        {
+            var category = await _service.UpdateAsync(id, dto);
+
+            if (category == null)
+                return NotFound();
+
+            return Ok(category);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    // [HttpPatch("{id:int}/deactivate")]
+    // public async Task<IActionResult> Deactivate(int id)
+    // {
+    //     try
+    //     {
+    //         var success = await _machineCategoryService.DeactivateAsync(id);
+
+    //         if (!success)
+    //             return NotFound();
+
+    //         return NoContent();
+    //     }
+    //     catch (InvalidOperationException ex)
+    //     {
+    //         return BadRequest(new { message = ex.Message });
+    //     }
+    // }
+
 }
